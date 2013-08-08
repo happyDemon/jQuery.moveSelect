@@ -1,9 +1,9 @@
 /**
  * moveSelect jQuery plugin
  * -----------------+
- * v 0.1 08/08/2013
+ * v 0.2b 08/08/2013
  *
- * Move options from one multi-select box to another
+ * Move options from one multi-select box to another (with key controls)
  *
  */
 (function( $ ) {
@@ -17,6 +17,8 @@
 		/**
 		 * Box class
 		 *
+		 * caches all the options.
+		 *
 		 * by converting the jquery elements to their ids and making use of native
 		 * javascript speeds things up a bit.
 		 *
@@ -26,8 +28,6 @@
 			cache: new Object(),
 			init: function(element) {
 				var id = element.attr('id');
-				var select = document.getElementById(id);
-				var node;
 				BOX.cache[id] = new Array();
 
 				var cache = BOX.cache[id];
@@ -42,7 +42,8 @@
 
 				select.options.length = 0; // clear all options
 
-				for (var i = 0, j = BOX.cache[id].length; i < j; i++) {
+				var cacheLength = BOX.cache[id].length;
+				for (var i = 0, j = cacheLength; i < j; i++) {
 					var node = BOX.cache[id][i];
 					if (node.displayed) {
 						select.options[select.options.length] = new Option(node.text, node.value, false, false);
@@ -139,15 +140,32 @@
 			}
 		};
 
+		/**
+		 * If a string is provided look through El for that element and make a jQuery object,
+		 * otherwise a jQuery object was provided, just return it.
+		 *
+		 * @param element string|jQuery
+		 * @return jQuery
+		 */
+		var setupElement = function (element) {
+			if(element instanceof jQuery)
+			{
+				return element;
+			}
+			else {
+				return El.find(element);
+			}
+		};
+
 		//check base and container, initialise them
-		var base = (opts.base != '') ? opts.base : El.find('#move-select-base');
+		var base = setupElement(opts.base);
 		BOX.init(base);
 
-		var container = (opts.container != '') ? opts.container : El.find('#move-select-container');
+		var container = setupElement(opts.container);
 		BOX.init(container);
 
 		//check save btn and attach save handler
-		var btn_save = (opts.save != '') ? opts.btn_save : El.find('#move-select-save');
+		var btn_save = setupElement(opts.btn_save);
 
 		btn_save.click(function(e){
 			//unset any selected options in the base element, just in case
@@ -162,7 +180,7 @@
 		});
 
 		//check btn_in and add handler
-		var btn_in = (opts.btn_in != '') ? opts.btn_in : El.find('#move-select-in');
+		var btn_in = setupElement(opts.btn_in);
 
 		btn_in.click(function(e) {
 			e.preventDefault();
@@ -173,7 +191,7 @@
 		});
 
 		//check btn_out and add handler
-		var btn_out = (opts.btn_out != '') ? opts.btn_out : El.find('#move-select-out');
+		var btn_out = setupElement(opts.btn_out);
 
 		btn_out.click(function(e) {
 			e.preventDefault();
@@ -184,7 +202,7 @@
 		});
 
 		//check btn_empty and add handler (empties the container)
-		var btn_empty = (opts.btn_empty != '') ? opts.btn_empty : El.find('#move-select-empty');
+		var btn_empty = setupElement(opts.btn_empty);
 
 		btn_empty.click(function(e){
 			e.preventDefault();
@@ -192,7 +210,7 @@
 		});
 
 		//check btn_fill and add handler (fills the container with all base's options)
-		var btn_fill = (opts.btn_fill != '') ? opts.btn_fill : El.find('#move-select-fill');
+		var btn_fill = setupElement(opts.btn_fill);
 
 		btn_fill.click(function(e){
 			e.preventDefault();
@@ -201,12 +219,12 @@
 
 		//Set up some keyboard controls
 		var setupControl = function (from_el, to_el, reverse) {
-			var arrowCode = 37;
+			var arrowCode = 37; //left arrow
+
 			if(typeof reverse == 'undefined')
 			{
-				arrowCode = 39;
+				arrowCode = 39; //right arrow
 			}
-
 
 			from_el.keydown(function(e){
 				var from = from_el.attr('id');
@@ -272,13 +290,13 @@
 			}
 
 			//check if we are offering filtering on the base
-			if(opts.filter.base == true)
+			if(opts.filter.base != false)
 			{
-				setupFilter(El.find('.move-select-base-filter'), base, container);
+				setupFilter(setupElement(opts.filter.base), base, container);
 			}
-			if(opts.filter.container == true)
+			if(opts.filter.container != false)
 			{
-				setupFilter(El.find('.move-select-container-filter'), container, base);
+				setupFilter(setupElement(opts.filter.container), container, base);
 			}
 		}
 		return this;
@@ -286,16 +304,16 @@
 
 	// Plugin defaults
 	$.fn.moveSelect.defaults = {
-		base: '',
-		container: '',
-		btn_in: '',
-		btn_out: '',
-		btn_save: '',
-		btn_empty: '',
-		btn_fill: '',
+		base: '#move-select-base', //select[multiple='multiple'] element
+		container: '#move-select-container', //select[multiple='multiple'] element
+		btn_in: '#move-select-in', //button or a element
+		btn_out: '#move-select-out', //button or a element
+		btn_save: '#move-select-save', //button or a element
+		btn_empty: '#move-select-empty', //button or a element
+		btn_fill: '#move-select-fill', //button or a element
 		filter: {
-			base: false,
-			container: false
+			base: false, //false or input[type='text'] element
+			container: false //false or input[type='text'] element
 		}
 	};
 
