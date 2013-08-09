@@ -1,7 +1,9 @@
 jQuery.moveSelect
 =================
 
-jQuery plugin that moves options between multi-select HTML elements
+jQuery plugin that moves options between multi-select HTML elements.
+
+Comes with keyboard control in the select elements (right/left arrow will move the selected element)
 
 ##Example
 
@@ -44,15 +46,15 @@ This is an example of how yout HTML could look like (styled with bootstrap 2.3.2
 All that's left is to initialise the plugin:
 ```javascript
 <script type="text/javascript">
-  	$(function() {
-			$('#permissions').moveSelect({btn_save: $('#group-save'), filter: false});
-		});
-	</script>
+	$(function() {
+		$('#permissions').moveSelect({btn_save: $('#group-save'), filter: false});
+	});
+</script>
 ```
 
-##Plugin defaults
-These can be passed as parameters when calling the plugin, you can define an ID '#move-select-base' or 
-pass along a jQuery object $('#move-select-base'):
+##Plugin parameters
+These can be passed as parameters when calling the plugin, you can define an ID ```'#move-select-base'``` or 
+pass along a jQuery object ```$('#move-select-base')```:
 
 ```javascript
 // Plugin defaults
