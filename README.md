@@ -3,7 +3,9 @@ jQuery.moveSelect
 
 jQuery plugin that moves options between multi-select HTML elements
 
+##Example
 
+This is an example of how yout HTML could look like (styled with bootstrap 2.3.2):
 ```html
 <div class="control-group">
   <label class="control-label">Permissions</label>
@@ -39,10 +41,32 @@ jQuery plugin that moves options between multi-select HTML elements
 
 ```
 
+All that's left is to initialise the plugin:
 ```javascript
 <script type="text/javascript">
   	$(function() {
 			$('#permissions').moveSelect({btn_save: $('#group-save'), filter: false});
 		});
 	</script>
+```
+
+##Plugin defaults
+These can be passed as parameters when calling the plugin, you can define an ID '#move-select-base' or 
+pass along a jQuery object $('#move-select-base'):
+
+```javascript
+// Plugin defaults
+	$.fn.moveSelect.defaults = {
+		base: '#move-select-base', //select[multiple='multiple'] element
+		container: '#move-select-container', //select[multiple='multiple'] element
+		btn_in: '#move-select-in', //button or a element
+		btn_out: '#move-select-out', //button or a element
+		btn_save: '#move-select-save', //button or a element
+		btn_empty: '#move-select-empty', //button or a element
+		btn_fill: '#move-select-fill', //button or a element
+		filter: {
+			base: false, //false or input[type='text'] element
+			container: false //false or input[type='text'] element
+		}
+	};
 ```
