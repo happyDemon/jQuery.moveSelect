@@ -16,9 +16,9 @@ This is an example of how yout HTML could look like (styled with bootstrap 2.3.2
 			<div class="row-fluid">
 				<div class="span5">
 					<select multiple="multiple" class="span12" id="move-select-base" size="8">
-							<option value="sentry.groups.delete">groups.delete</option>
-							<option value="sentry.groups.edit">groups.edit</option>
-							<option value="sentry.groups.permissions.add">groups.add</option>
+							<option value="1">groups.delete</option>
+							<option value="2">groups.edit</option>
+							<option value="3">groups.add</option>
 					</select>
 				</div>
 				<div class="span2 pagination-centered" style="padding-top: 60px;">
