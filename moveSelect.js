@@ -8,7 +8,7 @@
  */
 (function( $ ) {
 
-	$.fn.moveSelect = function( options ) {
+	$.fn.moveSelect = function( options, ajax ) {
 		var El = this;
 
 		// Extend our default options with those provided.
@@ -88,6 +88,25 @@
 					}
 				}
 				BOX.redisplay(type);
+			},
+			/**
+			 * Add options to the cache an redisplay the element if needed
+			 *
+			 * @param type string
+			 * @param options array
+			 * @param redisplay bool|object
+			 */
+			add_options: function(type, options, redisplay) {
+				var length = options.length;
+
+				for(var i=0; i<length;i++)
+				{
+					BOX.cache[type].push({value: options[i].value, text: options[i].text, displayed: 1});
+				}
+
+				BOX.sort(type);
+
+				BOX._do_redisplay(redisplay, type);
 			},
 			/**
 			 * Delete an option from the cache.
@@ -202,21 +221,33 @@
 			 * @param boolean|Object option {base: bool, container: bool} or just true|false
 			 * @private
 			 */
-			_do_redisplay: function(option) {
+			_do_redisplay: function(option, element) {
 				if(option instanceof Object) {
 					if(option.base == true)
 					{
-						BOX.redisplay('base');
+						if(typeof element == 'undefined' || element == 'base')
+						{
+							BOX.redisplay('base');
+						}
 					}
 					if(option.container == true)
 					{
-						BOX.redisplay('container');
+						if(typeof element == 'undefined' || element == 'container')
+						{
+							BOX.redisplay('container');
+						}
 					}
 				}
 				else if(typeof option != 'undefined' && option == true)
 				{
-					BOX.redisplay('base');
-					BOX.redisplay('container');
+					if(typeof element == 'undefined' || element == 'base')
+					{
+						BOX.redisplay('base');
+					}
+					if(typeof element == 'undefined' || element == 'container')
+					{
+						BOX.redisplay('container');
+					}
 				}
 			}
 		};
@@ -248,6 +279,53 @@
 		var container = setupElement(opts.container);
 
 		BOX.init(base, container);
+
+		//check if we need to load JSON data through AJAX
+		if(typeof ajax != 'undefined')
+		{
+			var ajaxData = {};
+
+			if(ajax instanceof Object)
+			{
+				//seems like we need to send over data with the request
+				$.getJSON(ajax.url, ajax.data, function(d){
+					ajaxData = d;
+				});
+			}
+			else if(ajax instanceof String)
+			{
+				//just send a get request to the URL
+				$.getJSON(ajax, {}, function(d){
+					ajaxData = d;
+				});
+			}
+
+			//we do require options at least for 1 of the types (be it for the base element or for the container element)
+			if(typeof ajaxData.base == 'undefined' && typeof ajaxData.container == undefined) {
+				El.trigger('ajax_error', ['Either a base or a container key needs to be defined.', ajaxData]);
+			}
+			else {
+				/**
+				 * JSON should be returned as
+				 *  {
+				 *      base: [
+				 *          {value: 'option'\'s value', text: 'actually displayed in option'},...
+				 *      ],
+				 *      container: [
+				 *          {value: 'option'\'s value', text: 'actually displayed in option'},...
+				 *      ],
+				 *  }
+				 */
+				if(typeof ajaxData.base == 'undefined' && ajaxData.base.length > 0)
+				{
+					BOX.add_options('base', ajaxData.base, opts.redisplay);
+				}
+				if(typeof ajaxData.base == 'undefined' && ajaxData.base.length > 0)
+				{
+					BOX.add_options('container', ajaxData.container, opts.redisplay);
+				}
+			}
+		}
 
 		//check save btn and attach save handler
 		var btn_save = setupElement(opts.btn_save);
