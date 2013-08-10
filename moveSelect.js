@@ -280,10 +280,6 @@
 		});
 
 		El.on('option_in', function(e, options, base_el, container_el, cache) {
-			console.log(options);
-			console.log(base_el);
-			console.log(container_el);
-			console.log(cache);
 			eventHandlers.option_in(e, options, base_el, container_el, cache);
 		});
 
