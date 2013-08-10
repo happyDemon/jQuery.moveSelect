@@ -103,4 +103,4 @@ Fired when you want to send all options from the container element to the base e
 
 ```ajax_error (e, error, ajaxData)```
 
-Fired when the returned data doesn't contain either a 'base' key of a 'container' key
+Fired when the returned data doesn't contain both a 'base' key of a 'container' key
