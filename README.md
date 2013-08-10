@@ -45,9 +45,7 @@ This is an example of how yout HTML could look like (styled with bootstrap 2.3.2
 
 ```
 
-All that's left is to initialise the plugin.
-
-Since our submit button falls outside of ```div#permissions``` we'll define it when initialising:
+All that's left is to initialise the plugin, since our submit button falls outside of ```div#permissions``` we'll define it when initialising:
 
 ```javascript
 <script type="text/javascript">
