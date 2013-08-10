@@ -213,18 +213,15 @@
 			//Move selected options in to the container and re-render the element
 			option_in: function(e, options, base_el, container_el, cache) {
 				e.preventDefault();
-				options.each(function(){
-					//remove the element from the select list
-					cache.move(base_el, container_el, true);
-				});
+
+				//remove the element from the select list
+				cache.move(base_el, container_el, true);
+
 			},
 			//Move selected options out of the container and re-render the element
 			option_out: function(e, options, base_el, container_el, cache) {
 				e.preventDefault();
-				options.each(function(){
-					//add the element to the select list
-					cache.move(container_el, base_el, true);
-				});
+				cache.move(container_el, base_el, true);
 			},
 			empty: function(e, base_el, container_el, cache) {
 				e.preventDefault();
@@ -272,18 +269,22 @@
 		});
 
 		btn_save.click(function(e){
-			El.trigger('save', container.find('option'), base.find('option'));
+			El.trigger('save', [container.find('option'), base.find('option')]);
 		});
 
 		//check btn_in and add handler
 		var btn_in = setupElement(opts.btn_in);
 
-		El.on('option_in', function(e, options, base_el, container_el, cache) {
-			eventHandlers.option_in(e, options, base_el, container_el, cache);
+		btn_in.on('click', function(e) {
+			El.trigger('option_in', [base.find('option:selected'), base, container, BOX]);
 		});
 
-		btn_in.click(function(e) {
-			El.trigger('option_in', base.find('option:selected'), base, container, BOX);
+		El.on('option_in', function(e, options, base_el, container_el, cache) {
+			console.log(options);
+			console.log(base_el);
+			console.log(container_el);
+			console.log(cache);
+			eventHandlers.option_in(e, options, base_el, container_el, cache);
 		});
 
 		//check btn_out and add handler
@@ -294,7 +295,7 @@
 		});
 
 		btn_out.click(function(e) {
-			El.trigger('option_out', container.find('option:selected'), base, container, BOX);
+			El.trigger('option_out', [container.find('option:selected'), base, container, BOX]);
 		});
 
 		//check btn_empty and add handler (empties the container)
@@ -305,7 +306,7 @@
 		});
 
 		btn_empty.click(function(e){
-			El.trigger('empty', container, base, BOX);
+			El.trigger('empty', [container, base, BOX]);
 		});
 
 		//check btn_fill and add handler (fills the container with all base's options)
@@ -316,7 +317,7 @@
 		});
 
 		btn_fill.click(function(e){
-			El.trigger('fill', container, base, BOX);
+			El.trigger('fill', [container, base, BOX]);
 		});
 
 		//Set up some keyboard controls
