@@ -73,3 +73,24 @@ pass along a jQuery object ```$('#move-select-base')```:
 		}
 	};
 ```
+
+##Plugin events
+```save (e, selected_options, unselected_option)```
+
+Fired when the save button or link is clicked.
+
+```option_in (e, options, base_el, container_el, cache)```
+
+Fired when your moving the selected options from the base element to the container element.
+
+```option_out (e, options, base_el, container_el, cache)```
+
+Fired when your moving the selected options from the container element to the base element.
+
+```fill (e, base_el, container_el, cache)```
+
+Fired when you want to send all options from the base element to the container element.
+
+```empty (e, base_el, container_el, cache)```
+
+Fired when you want to send all options from the container element to the base element.
