@@ -56,8 +56,9 @@ All that's left is to initialise the plugin, since our submit button falls outsi
 ```
 
 ##Plugin parameters
-These can be passed as parameters when calling the plugin, you can define an ID ```'#move-select-base'``` or 
-pass along a jQuery object ```$('#move-select-base')```:
+These can be passed as parameters when calling the plugin, you can define an ID ```'#move-select-base'```
+(if prefix is set to false, otherwise just ```base```) or pass along a jQuery object 
+```$('#move-select-base')```:
 
 ```javascript
 // Plugin defaults
