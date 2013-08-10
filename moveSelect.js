@@ -199,40 +199,6 @@
 			}
 		};
 
-		var eventHandlers = {
-			//When saving we'll need to at least select all the options in container
-			save: function(e, selected_options, unselected_options) {
-				selected_options.each(function(){
-					$(this).attr('selected', true);
-				});
-				/*
-				unselected_options.each(function(){
-					$(this).attr('selected', false);
-				});*/
-			},
-			//Move selected options in to the container and re-render the element
-			option_in: function(e, options, base_el, container_el, cache) {
-				e.preventDefault();
-
-				//remove the element from the select list
-				cache.move(base_el, container_el, true);
-
-			},
-			//Move selected options out of the container and re-render the element
-			option_out: function(e, options, base_el, container_el, cache) {
-				e.preventDefault();
-				cache.move(container_el, base_el, true);
-			},
-			empty: function(e, base_el, container_el, cache) {
-				e.preventDefault();
-				cache.move_all(container_el, base_el, true);
-			},
-			fill: function(e, base_el, container_el, cache) {
-				e.preventDefault();
-				cache.move_all(base_el, container_el, true);
-			}
-		};
-
 		/**
 		 * If a string is provided look through El for that element and make a jQuery object,
 		 * otherwise a jQuery object was provided, just return it.
@@ -265,7 +231,7 @@
 		var btn_save = setupElement(opts.btn_save);
 
 		El.on('save', function(e, selected_options, unselected_options){
-			eventHandlers.save(e, selected_options, unselected_options);
+			$.fn.moveSelect.eventHandlers.save(e, selected_options, unselected_options);
 		});
 
 		btn_save.click(function(e){
@@ -276,21 +242,23 @@
 		var btn_in = setupElement(opts.btn_in);
 
 		btn_in.on('click', function(e) {
+			e.preventDefault();
 			El.trigger('option_in', [base.find('option:selected'), base, container, BOX]);
 		});
 
 		El.on('option_in', function(e, options, base_el, container_el, cache) {
-			eventHandlers.option_in(e, options, base_el, container_el, cache);
+			$.fn.moveSelect.eventHandlers.option_in(e, options, base_el, container_el, cache);
 		});
 
 		//check btn_out and add handler
 		var btn_out = setupElement(opts.btn_out);
 
 		El.on('option_out', function(e, options, base_el, container_el, cache){
-			eventHandlers.option_out(e, options, base_el, container_el, cache);
+			$.fn.moveSelect.eventHandlers.option_out(e, options, base_el, container_el, cache);
 		});
 
 		btn_out.click(function(e) {
+			e.preventDefault();
 			El.trigger('option_out', [container.find('option:selected'), base, container, BOX]);
 		});
 
@@ -298,22 +266,24 @@
 		var btn_empty = setupElement(opts.btn_empty);
 
 		El.on('empty', function(e, base_el, container_el, cache){
-			eventHandlers.empty(e, base_el, container_el, cache);
+			$.fn.moveSelect.eventHandlers.empty(e, base_el, container_el, cache);
 		});
 
 		btn_empty.click(function(e){
-			El.trigger('empty', [container, base, BOX]);
+			e.preventDefault();
+			El.trigger('empty', [base, container, BOX]);
 		});
 
 		//check btn_fill and add handler (fills the container with all base's options)
 		var btn_fill = setupElement(opts.btn_fill);
 
 		El.on('fill', function(e, base_el, container_el, cache){
-			eventHandlers.fill(e, base_el, container_el, cache);
+			$.fn.moveSelect.eventHandlers.fill(e, base_el, container_el, cache);
 		});
 
 		btn_fill.click(function(e){
-			El.trigger('fill', [container, base, BOX]);
+			e.preventDefault();
+			El.trigger('fill', [base, container, BOX]);
 		});
 
 		//Set up some keyboard controls
@@ -389,7 +359,6 @@
 		return this;
 	};
 
-	// Plugin defaults
 	$.fn.moveSelect.defaults = {
 		prefix: '#move-select-', //if not false it will prefix all the defined ids
 		base: 'base', //select[multiple='multiple'] element
@@ -402,6 +371,31 @@
 		filter: {
 			base: false, //false or input[type='text'] element
 			container: false //false or input[type='text'] element
+		}
+	};
+	// Default event handlers
+	$.fn.moveSelect.eventHandlers = {
+		//When saving we'll need to at least select all the options in container
+		save: function(e, container_options, base_options) {
+			container_options.each(function(){
+				$(this).attr('selected', true);
+			});
+		},
+		//Move selected options in to the container and re-render the element
+		option_in: function(e, options, base_el, container_el, cache) {
+			//remove the element from the select list
+			cache.move(base_el, container_el, true);
+
+		},
+		//Move selected options out of the container and re-render the element
+		option_out: function(e, options, base_el, container_el, cache) {
+			cache.move(container_el, base_el, true);
+		},
+		empty: function(e, base_el, container_el, cache) {
+			cache.move_all(container_el, base_el, true);
+		},
+		fill: function(e, base_el, container_el, cache) {
+			cache.move_all(base_el, container_el, true);
 		}
 	};
 
