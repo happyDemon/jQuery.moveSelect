@@ -59,13 +59,14 @@ pass along a jQuery object ```$('#move-select-base')```:
 ```javascript
 // Plugin defaults
 	$.fn.moveSelect.defaults = {
-		base: '#move-select-base', //select[multiple='multiple'] element
-		container: '#move-select-container', //select[multiple='multiple'] element
-		btn_in: '#move-select-in', //button or a element
-		btn_out: '#move-select-out', //button or a element
-		btn_save: '#move-select-save', //button or a element
-		btn_empty: '#move-select-empty', //button or a element
-		btn_fill: '#move-select-fill', //button or a element
+		prefix: '#move-select-'
+		base: 'base', //select[multiple='multiple'] element
+		container: 'container', //select[multiple='multiple'] element
+		btn_in: 'in', //button or a element
+		btn_out: 'out', //button or a element
+		btn_save: 'save', //button or a element
+		btn_empty: 'empty', //button or a element
+		btn_fill: 'fill', //button or a element
 		filter: {
 			base: false, //false or input[type='text'] element
 			container: false //false or input[type='text'] element
