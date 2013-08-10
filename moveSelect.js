@@ -26,34 +26,44 @@
 		 */
 		var BOX = {
 			cache: new Object(),
+			elements: {
+				base: null,
+				container: null
+			},
 			/**
 			 * Initiate a cache for the provided element
 			 * @param element jQuery
 			 */
-			init: function(element) {
-				var id = element.attr('id');
-				BOX.cache[id] = new Array();
+			init: function(base, container) {
+				BOX._init(base, 'base');
+				BOX._init(container, 'container');
+			},
+			_init: function(element, type) {
+				//set the type (base or container) to this element
+				BOX.elements[type] = element;
 
-				var cache = BOX.cache[id];
+				//setup the cache
+				BOX.cache[type] = new Array();
+
+				//store the options
 				element.find('option').each(function(){
-					cache.push({value: $(this).val(), text: $(this).text(), displayed: 1});
+					BOX.cache[type].push({value: $(this).val(), text: $(this).text(), displayed: 1});
 				});
 			},
 			/**
 			 * Re-render a jQuery element's options
 			 * @param element jQuery
 			 */
-			redisplay: function(element) {
-				var id = element.attr('id');
-				var select = document.getElementById(id);
+			redisplay: function(type) {
+				var select = document.getElementById(BOX.elements[type].attr('id'));
 
 				select.options.length = 0; // clear all options
 
-				var cacheLength = BOX.cache[id].length;
+				var cacheLength = BOX.cache[type].length;
 
 				// Repopulate HTML select box from cache
 				for (var i = 0, j = cacheLength; i < j; i++) {
-					var node = BOX.cache[id][i];
+					var node = BOX.cache[type][i];
 					if (node.displayed) {
 						select.options[select.options.length] = new Option(node.text, node.value, false, false);
 					}
@@ -64,13 +74,12 @@
 			 * @param element jQuery Element to filter options on
 			 * @param text string Text to filter the element's options with
 			 */
-			filter: function(element, text) {
-				var id = element.attr('id');
+			filter: function(type, text) {
 				// Redisplay the HTML select box, displaying only the choices containing ALL
 				// the words in text. (It's an AND search.)
 				var tokens = text.toLowerCase().split(/\s+/);
 				var node, token;
-				for (var i = 0; (node = BOX.cache[id][i]); i++) {
+				for (var i = 0; (node = BOX.cache[type][i]); i++) {
 					node.displayed = 1;
 					for (var j = 0; (token = tokens[j]); j++) {
 						if (node.text.toLowerCase().indexOf(token) == -1) {
@@ -78,7 +87,7 @@
 						}
 					}
 				}
-				BOX.redisplay(id);
+				BOX.redisplay(type);
 			},
 			/**
 			 * Delete an option from the cache.
@@ -86,20 +95,19 @@
 			 * @param element jQuery Element to delete option from
 			 * @param value string Option value to delete
 			 */
-			delete_from_cache: function(element, value) {
-				var id = element.attr('id');
+			delete_from_cache: function(type, value) {
 				var node, delete_index = null;
-				for (var i = 0; (node = BOX.cache[id][i]); i++) {
+				for (var i = 0; (node = BOX.cache[type][i]); i++) {
 					if (node.value == value) {
 						delete_index = i;
 						break;
 					}
 				}
-				var j = BOX.cache[id].length - 1;
+				var j = BOX.cache[type].length - 1;
 				for (var i = delete_index; i < j; i++) {
-					BOX.cache[id][i] = BOX.cache[id][i+1];
+					BOX.cache[type][i] = BOX.cache[type][i+1];
 				}
-				BOX.cache[id].length--;
+				BOX.cache[type].length--;
 			},
 			/**
 			 * Add an option to the cache
@@ -107,9 +115,8 @@
 			 * @param element jQuery Element to add the option for
 			 * @param option string Option to add
 			 */
-			add_to_cache: function(element, option) {
-				var id = element.attr('id');
-				BOX.cache[id].push({value: option.value, text: option.text, displayed: 1});
+			add_to_cache: function(type, option) {
+				BOX.cache[type].push({value: option.value, text: option.text, displayed: 1});
 			},
 			/**
 			 * Check if an item is contained in the cache
@@ -117,10 +124,9 @@
 			 * @param value Value to check the cache for
 			 * @return {Boolean}
 			 */
-			cache_contains: function(element, value) {
-				var id = element.attr('id');
+			cache_contains: function(type, value) {
 				var node;
-				for (var i = 0; (node = BOX.cache[id][i]); i++) {
+				for (var i = 0; (node = BOX.cache[type][i]); i++) {
 					if (node.value == value) {
 						return true;
 					}
@@ -135,7 +141,7 @@
 			 * @param redisplay boolean Should we re-render those elements with the new option
 			 */
 			move: function(from, to, redisplay) {
-				var from_box = document.getElementById(from.attr('id'));
+				var from_box = document.getElementById(BOX.elements[from].attr('id'));
 				var option;
 				for (var i = 0; (option = from_box.options[i]); i++) {
 					if (option.selected && BOX.cache_contains(from, option.value)) {
@@ -143,13 +149,11 @@
 						BOX.delete_from_cache(from, option.value);
 					}
 				}
+
 				BOX.sort(from);
 				BOX.sort(to);
 
-				if(typeof redisplay != 'undefined') {
-					BOX.redisplay(from);
-					BOX.redisplay(to);
-				}
+				BOX._do_redisplay(redisplay);
 			},
 			/**
 			 * Move all options from one element to another.
@@ -159,8 +163,7 @@
 			 * @param redisplay boolean Should we re-render those elements with the new options
 			 */
 			move_all: function(from, to, redisplay) {
-				var from_box = document.getElementById(from.attr('id'));
-				var to_box = document.getElementById(to.attr('id'));
+				var from_box = document.getElementById(BOX.elements[from].attr('id'));
 				var option;
 				for (var i = 0; (option = from_box.options[i]); i++) {
 					if (BOX.cache_contains(from, option.value)) {
@@ -171,10 +174,7 @@
 				BOX.sort(from);
 				BOX.sort(to);
 
-				if(typeof redisplay != 'undefined') {
-					BOX.redisplay(from);
-					BOX.redisplay(to);
-				}
+				BOX._do_redisplay(redisplay);
 			},
 			/**
 			 * Sort the cache alphabetically.
@@ -182,8 +182,7 @@
 			 * @return integer|this
 			 */
 			sort: function(element) {
-				var id = element.attr('id');
-				BOX.cache[id].sort( function(a, b) {
+				BOX.cache[element].sort( function(a, b) {
 					a = a.text.toLowerCase();
 					b = b.text.toLowerCase();
 					try {
@@ -196,6 +195,29 @@
 					return 0;
 				} );
 				return this;
+			},
+			/**
+			 * Check which type(s) to redisplay and do so accordingly
+			 *
+			 * @param boolean|Object option {base: bool, container: bool} or just true|false
+			 * @private
+			 */
+			_do_redisplay: function(option) {
+				if(option instanceof Object) {
+					if(option.base == true)
+					{
+						BOX.redisplay('base');
+					}
+					if(option.container == true)
+					{
+						BOX.redisplay('container');
+					}
+				}
+				else if(typeof option != 'undefined' && option == true)
+				{
+					BOX.redisplay('base');
+					BOX.redisplay('container');
+				}
 			}
 		};
 
@@ -216,16 +238,16 @@
 				{
 					return El.find(opts.prefix+element);
 				}
+
 				return El.find(element);
 			}
 		};
 
 		//check base and container, initialise them
 		var base = setupElement(opts.base);
-		BOX.init(base);
-
 		var container = setupElement(opts.container);
-		BOX.init(container);
+
+		BOX.init(base, container);
 
 		//check save btn and attach save handler
 		var btn_save = setupElement(opts.btn_save);
@@ -243,47 +265,47 @@
 
 		btn_in.on('click', function(e) {
 			e.preventDefault();
-			El.trigger('option_in', [base.find('option:selected'), base, container, BOX]);
+			El.trigger('option_in', [base.find('option:selected'), base, container, BOX, opts.redisplay]);
 		});
 
-		El.on('option_in', function(e, options, base_el, container_el, cache) {
-			$.fn.moveSelect.eventHandlers.option_in(e, options, base_el, container_el, cache);
+		El.on('option_in', function(e, options, base_el, container_el, cache, redisplay) {
+			$.fn.moveSelect.eventHandlers.option_in(e, options, base_el, container_el, cache, redisplay);
 		});
 
 		//check btn_out and add handler
 		var btn_out = setupElement(opts.btn_out);
 
-		El.on('option_out', function(e, options, base_el, container_el, cache){
-			$.fn.moveSelect.eventHandlers.option_out(e, options, base_el, container_el, cache);
+		El.on('option_out', function(e, options, base_el, container_el, cache, redisplay){
+			$.fn.moveSelect.eventHandlers.option_out(e, options, base_el, container_el, cache, redisplay);
 		});
 
 		btn_out.click(function(e) {
 			e.preventDefault();
-			El.trigger('option_out', [container.find('option:selected'), base, container, BOX]);
+			El.trigger('option_out', [container.find('option:selected'), base, container, BOX, opts.redisplay]);
 		});
 
 		//check btn_empty and add handler (empties the container)
 		var btn_empty = setupElement(opts.btn_empty);
 
-		El.on('empty', function(e, base_el, container_el, cache){
-			$.fn.moveSelect.eventHandlers.empty(e, base_el, container_el, cache);
+		El.on('empty', function(e, base_el, container_el, cache, redisplay){
+			$.fn.moveSelect.eventHandlers.empty(e, base_el, container_el, cache, redisplay);
 		});
 
 		btn_empty.click(function(e){
 			e.preventDefault();
-			El.trigger('empty', [base, container, BOX]);
+			El.trigger('empty', [base, container, BOX, opts.redisplay]);
 		});
 
 		//check btn_fill and add handler (fills the container with all base's options)
 		var btn_fill = setupElement(opts.btn_fill);
 
-		El.on('fill', function(e, base_el, container_el, cache){
-			$.fn.moveSelect.eventHandlers.fill(e, base_el, container_el, cache);
+		El.on('fill', function(e, base_el, container_el, cache, redisplay){
+			$.fn.moveSelect.eventHandlers.fill(e, base_el, container_el, cache, redisplay);
 		});
 
 		btn_fill.click(function(e){
 			e.preventDefault();
-			El.trigger('fill', [base, container, BOX]);
+			El.trigger('fill', [base, container, BOX, opts.redisplay]);
 		});
 
 		//Set up some keyboard controls
@@ -371,6 +393,10 @@
 		filter: {
 			base: false, //false or input[type='text'] element
 			container: false //false or input[type='text'] element
+		},
+		redisplay: {
+			base: true,
+			container: true
 		}
 	};
 	// Default event handlers
@@ -382,20 +408,41 @@
 			});
 		},
 		//Move selected options in to the container and re-render the element
-		option_in: function(e, options, base_el, container_el, cache) {
-			//remove the element from the select list
-			cache.move(base_el, container_el, true);
+		option_in: function(e, options, base_el, container_el, cache, redisplay) {
+			if(typeof redisplay == 'undefined')
+			{
+				redisplay = true;
+			}
+
+			cache.move('base', 'container', redisplay);
 
 		},
 		//Move selected options out of the container and re-render the element
-		option_out: function(e, options, base_el, container_el, cache) {
-			cache.move(container_el, base_el, true);
+		option_out: function(e, options, base_el, container_el, cache, redisplay) {
+			if(typeof redisplay == 'undefined')
+			{
+				redisplay = true;
+			}
+
+			cache.move('container', 'base', redisplay);
 		},
-		empty: function(e, base_el, container_el, cache) {
-			cache.move_all(container_el, base_el, true);
+		//Move all options from the container element to the base element and re-render both
+		empty: function(e, base_el, container_el, cache, redisplay) {
+			if(typeof redisplay == 'undefined')
+			{
+				redisplay = true;
+			}
+
+			cache.move_all('container', 'base', redisplay);
 		},
-		fill: function(e, base_el, container_el, cache) {
-			cache.move_all(base_el, container_el, true);
+		//Move all options from the container element to the base element and re-render both
+		fill: function(e, base_el, container_el, cache, redisplay) {
+			if(typeof redisplay == 'undefined')
+			{
+				redisplay = true;
+			}
+
+			cache.move_all('base', 'container', redisplay);
 		}
 	};
 
