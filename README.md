@@ -39,17 +39,20 @@ This is an example of how yout HTML could look like (styled with bootstrap 2.3.2
 </div>
 <div class="control-group">
   <div class="controls">
-		<input type="submit" class="btn btn-success" id="group-save" value="Create group" />
+		<input type="submit" class="btn btn-success" id="permissions-save" value="Create group" />
 	</div>
 </div>
 
 ```
 
-All that's left is to initialise the plugin:
+All that's left is to initialise the plugin.
+
+Since our submit button falls outside of ```div#permissions``` we'll define it when initialising:
+
 ```javascript
 <script type="text/javascript">
 	$(function() {
-		$('#permissions').moveSelect({btn_save: $('#group-save'), filter: false});
+		$('#permissions').moveSelect({btn_save: $('#permissions-save'), filter: false});
 	});
 </script>
 ```
