@@ -5,6 +5,8 @@ jQuery plugin that moves options between multi-select HTML elements.
 
 Comes with keyboard control in the select elements (right/left arrow will move the selected element)
 
+Optionally fill the select elements with JSON data loaded through AJAX.
+
 ##Example
 
 This is an example of how yout HTML could look like (styled with bootstrap 2.3.2):
@@ -67,9 +69,13 @@ pass along a jQuery object ```$('#move-select-base')```:
 		btn_save: 'save', //button or a element
 		btn_empty: 'empty', //button or a element
 		btn_fill: 'fill', //button or a element
-		filter: {
+		filter: { //if you set filter to false both will be false
 			base: false, //false or input[type='text'] element
 			container: false //false or input[type='text'] element
+		},
+		redisplay: { //if you set redisplay to false or true both container and base will be counted as false
+			base: true, //should the base element re-render after options were moved?
+			container: true //should the container element re-render after options were moved?
 		}
 	};
 ```
@@ -94,3 +100,7 @@ Fired when you want to send all options from the base element to the container e
 ```empty (e, base_el, container_el, cache)```
 
 Fired when you want to send all options from the container element to the base element.
+
+```ajax_error (e, error, ajaxData)```
+
+Fired when the returned data doesn't contain either a 'base' key of a 'container' key
