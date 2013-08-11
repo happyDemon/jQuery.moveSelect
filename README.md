@@ -16,6 +16,11 @@ This is an example of how yout HTML could look like (styled with bootstrap 2.3.2
 	<div class="controls">
 		<div class="row-fluid" id="permissions">
 			<div class="row-fluid">
+				<div class="span5"><input type="text" id="move-select-filter-base" class="span12"/></div>
+				<div class="span2"></div>
+				<div class="span5"><input type="text" class="span12 pull-right" id="move-select-filter-container" /></div>
+			</div>
+			<div class="row-fluid">
 				<div class="span5">
 					<select multiple="multiple" class="span12" id="move-select-base" size="8">
 							<option value="1">groups.delete</option>
@@ -72,8 +77,8 @@ These can be passed as parameters when calling the plugin, you can define an ID 
 		btn_empty: 'empty', //button or a element
 		btn_fill: 'fill', //button or a element
 		filter: { //if you set filter to false both will be false
-			base: false, //false or input[type='text'] element
-			container: false //false or input[type='text'] element
+			base: 'filter-base', //false or input[type='text'] element
+			container: 'filter-container' //false or input[type='text'] element
 		},
 		redisplay: { //if you set redisplay to false or true both container and base will be counted as false
 			base: true, //should the base element re-render after options were moved?
@@ -102,6 +107,14 @@ Fired when you want to send all options from the base element to the container e
 ```empty (e, base_el, container_el, cache)```
 
 Fired when you want to send all options from the container element to the base element.
+
+```filter_base (e, element, cache, tokens, redisplay)```
+
+Fired when the base element's cache has been filtered
+
+```filter_container (e, element, cache, tokens, redisplay)```
+
+Fired when the container element's cache has been filtered
 
 ```ajax_error (e, error, ajaxData)```
 
