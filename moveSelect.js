@@ -74,10 +74,10 @@
 			 * @param element jQuery Element to filter options on
 			 * @param text string Text to filter the element's options with
 			 */
-			filter: function(type, text) {
+			filter: function(type, tokens) {
 				// Redisplay the HTML select box, displaying only the choices containing ALL
 				// the words in text. (It's an AND search.)
-				var tokens = text.toLowerCase().split(/\s+/);
+
 				var node, token;
 				for (var i = 0; (node = BOX.cache[type][i]); i++) {
 					node.displayed = 1;
@@ -388,72 +388,75 @@
 
 		//Set up some keyboard controls
 		var setupArrowControl = function (from_el, to_el, reverse, controlEl) {
-			var arrowCode = 37; //left arrow
 
-			if(typeof reverse == 'undefined' || reverse == false)
-			{
-				arrowCode = 39; //right arrow
-			}
-
-			if(typeof controlEl == 'undefined')
-			{
-				controlEl = from_el;
-			}
+			//Use right or left arrow to move the options
+			var arrowCode = (typeof reverse == 'undefined' || reverse == false) ? 39 : 37;
 
 			controlEl.keydown(function(e){
-				var from = from_el.attr('id');
+				e.preventDefault();
+
+				var from = document.getElementById(BOX.elements[from_el].attr('id'));
+
 				// right|left arrow -- move across
 				if ((e.which && e.which == arrowCode) || (e.keyCode && e.keyCode == arrowCode)) {
-					e.preventDefault();
 					var old_index = from.selectedIndex;
 					BOX.move(from_el, to_el, true);
 					from.selectedIndex = (old_index == from.length) ? from.length - 1 : old_index;
 				}
+
 				// down arrow -- wrap around
 				if ((e.which && event.which == 40) || (e.keyCode && e.keyCode == 40)) {
 					from.selectedIndex = (from.length == from.selectedIndex + 1) ? 0 : from.selectedIndex + 1;
 				}
+
 				// up arrow -- wrap around
 				if ((e.which && e.which == 38) || (e.keyCode && e.keyCode == 38)) {
 					from.selectedIndex = (from.selectedIndex == 0) ? from.length - 1 : from.selectedIndex - 1;
 				}
+
 				return true;
 			});
 		};
 
-		setupArrowControl(base, container);
-		setupArrowControl(container, base, true);
+		setupArrowControl('base', 'container', false, base);
+		setupArrowControl('container', 'base', true, container);
 
 		if(typeof opts.filter == Object)
 		{
-			var setupFilter = function(filter, source, destination, reverse) {
+			var setupFilter = function(filter, source, reverse) {
 				filter.keyup(function(e){
-					var from = source.attr('id');
+					var from = document.getElementById(BOX.elements[source].attr('id'));
+					var destination = (source == 'base') ? 'container' : 'base';
+
 					// don't submit form if user pressed Enter
 					if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
 						e.preventDefault();
+
 						from.selectedIndex = 0;
 						BOX.move(source, destination, true);
 						from.selectedIndex = 0;
 					}
+
 					var temp = from.selectedIndex;
-					BOX.filter(base, filter.val());
+					var tokens = filter.val().toLowerCase().split(/\s+/);
+
+					BOX.filter(source, tokens);
 					from.selectedIndex = temp;
 					return true;
 				});
 
 				//Setup arrow control
-				setupArrowControl(base, container, reverse, filter);
+				setupArrowControl(source, destination, reverse, filter);
 			}
 
 			//check if we are offering filtering on the base
 			if(opts.filter.base != false)
 			{
-				setupFilter(setupElement(opts.filter.base), base, container, false);
+				setupFilter(setupElement(opts.filter.base), 'base', false);
 			}
 			if(opts.filter.container != false)
 			{
-				setupFilter(setupElement(opts.filter.container), container, base, true);
+				setupFilter(setupElement(opts.filter.container), 'container', true);
 			}
 		}
 		return this;
