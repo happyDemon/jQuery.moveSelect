@@ -88,6 +88,9 @@ These can be passed as parameters when calling the plugin, you can define an ID 
 ```
 
 ##Plugin events
+
+All these events will be fired and can be caught on the element you initiated moveSelect on.
+
 ```save (e, selected_options, unselected_option)```
 
 Fired when the save button or link is clicked.
