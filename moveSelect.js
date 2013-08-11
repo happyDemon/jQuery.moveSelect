@@ -74,10 +74,9 @@
 			 * @param element jQuery Element to filter options on
 			 * @param text string Text to filter the element's options with
 			 */
-			filter: function(type, tokens) {
+			filter: function(type, tokens, redisplay) {
 				// Redisplay the HTML select box, displaying only the choices containing ALL
 				// the words in text. (It's an AND search.)
-
 				var node, token;
 				for (var i = 0; (node = BOX.cache[type][i]); i++) {
 					node.displayed = 1;
@@ -87,7 +86,8 @@
 						}
 					}
 				}
-				BOX.redisplay(type);
+				BOX._do_redisplay(redisplay, type);
+				return BOX.cache[type];
 			},
 			/**
 			 * Add options to the cache an redisplay the element if needed
@@ -393,12 +393,11 @@
 			var arrowCode = (typeof reverse == 'undefined' || reverse == false) ? 39 : 37;
 
 			controlEl.keydown(function(e){
-				e.preventDefault();
-
 				var from = document.getElementById(BOX.elements[from_el].attr('id'));
 
 				// right|left arrow -- move across
 				if ((e.which && e.which == arrowCode) || (e.keyCode && e.keyCode == arrowCode)) {
+					e.preventDefault();
 					var old_index = from.selectedIndex;
 					BOX.move(from_el, to_el, true);
 					from.selectedIndex = (old_index == from.length) ? from.length - 1 : old_index;
@@ -406,11 +405,13 @@
 
 				// down arrow -- wrap around
 				if ((e.which && event.which == 40) || (e.keyCode && e.keyCode == 40)) {
+					e.preventDefault();
 					from.selectedIndex = (from.length == from.selectedIndex + 1) ? 0 : from.selectedIndex + 1;
 				}
 
 				// up arrow -- wrap around
 				if ((e.which && e.which == 38) || (e.keyCode && e.keyCode == 38)) {
+					e.preventDefault();
 					from.selectedIndex = (from.selectedIndex == 0) ? from.length - 1 : from.selectedIndex - 1;
 				}
 
@@ -421,26 +422,31 @@
 		setupArrowControl('base', 'container', false, base);
 		setupArrowControl('container', 'base', true, container);
 
-		if(typeof opts.filter == Object)
+		if(opts.filter instanceof Object)
 		{
 			var setupFilter = function(filter, source, reverse) {
+				var destination = (source == 'base') ? 'container' : 'base';
 				filter.keyup(function(e){
 					var from = document.getElementById(BOX.elements[source].attr('id'));
-					var destination = (source == 'base') ? 'container' : 'base';
 
 					// don't submit form if user pressed Enter
 					if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
 						e.preventDefault();
 
 						from.selectedIndex = 0;
-						BOX.move(source, destination, true);
+						BOX.move(source, destination, opts.redisplay);
 						from.selectedIndex = 0;
 					}
 
 					var temp = from.selectedIndex;
 					var tokens = filter.val().toLowerCase().split(/\s+/);
 
-					BOX.filter(source, tokens);
+					//this does an AND search
+					var cache = BOX.filter(source, tokens, opts.redisplay);
+
+					//trigger a filter_[base|container] event
+					El.trigger('filter_'+source, [BOX.elements[source], cache, tokens, opts.redisplay]);
+
 					from.selectedIndex = temp;
 					return true;
 				});
@@ -472,8 +478,8 @@
 		btn_empty: 'empty', //button or a element
 		btn_fill: 'fill', //button or a element
 		filter: {
-			base: false, //false or input[type='text'] element
-			container: false //false or input[type='text'] element
+			base: 'filter-base', //false or input[type='text'] element
+			container: 'filter-container' //false or input[type='text'] element
 		},
 		redisplay: {
 			base: true,
